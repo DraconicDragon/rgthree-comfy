@@ -166,7 +166,7 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
           .map((widget) => widget.value.lora)
           .filter((file): file is string => file !== null);
         this.logger.debugParts("Updating Possibly outdated Lora Paths.");
-        MODEL_INFO_SERVICE.getCorrectedLoraPaths(loras).then((correctedPaths) => {
+        LORA_INFO_SERVICE.getCorrectedLoraPaths(loras).then((correctedPaths) => {
             if (!correctedPaths) {
               this.logger.debugParts('Corrected Paths not found (null response)');
               return;
