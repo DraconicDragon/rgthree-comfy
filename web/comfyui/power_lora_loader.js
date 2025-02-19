@@ -106,7 +106,16 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                 });
             },
         };
-        options.splice(options.length - 1, 0, fetchInfoMenuItem, fixPathsMenuItem);
+        const sortLoraWidgetsMenuItem = {
+            content: "Sort LoRA widgets by name",
+            callback: (_value, _options, _event, _parentMenu, _node) => {
+                const loraWidgets = this.getLoraWidgets();
+                const sortedWidgets = loraWidgets.toSorted((a, b) => a.getLoraLabel().localeCompare(b.getLoraLabel()));
+                const firstLoraWidget = this.widgets.findIndex(w => isLoraWidget(w));
+                this.widgets.splice(firstLoraWidget, sortedWidgets.length, ...sortedWidgets);
+            },
+        };
+        options.splice(options.length - 1, 0, fetchInfoMenuItem, fixPathsMenuItem, sortLoraWidgetsMenuItem);
     }
     updateCommonPrefix() {
         if (!this.hasLoraWidgets) {
@@ -566,6 +575,9 @@ class PowerLoraLoaderWidget extends RgthreeBaseWidget {
         posX += loraWidth + innerMargin;
         ctx.globalAlpha = app.canvas.editor_alpha;
         ctx.restore();
+    }
+    getLoraLabel() {
+        return this.getLoraName();
     }
     getLoraName(commonPrefix = '', nameDisplay = PROP_VALUE_NAME_OPTIONS_CIVITAI) {
         var _c, _d;

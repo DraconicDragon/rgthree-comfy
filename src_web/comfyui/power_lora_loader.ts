@@ -134,7 +134,7 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
 
   override getExtraMenuOptions(canvas: LGraphCanvas, options: ContextMenuItem[]): void {
     super.getExtraMenuOptions?.apply(this, [...arguments] as any);
-    const fetchInfoMenuItem = {
+    const fetchInfoMenuItem: ContextMenuItem = {
       content: "Fetch info for all LoRAs",
       callback: (
         _value: ContextMenuItem,
@@ -154,7 +154,7 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
         });
       },
     };
-    const fixPathsMenuItem = {
+    const fixPathsMenuItem: ContextMenuItem = {
       content: "Update paths for all LoRAs",
       callback: (
         _value: ContextMenuItem,
@@ -189,7 +189,22 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
         });
       },
     };
-    options.splice(options.length - 1, 0, fetchInfoMenuItem, fixPathsMenuItem);
+    const sortLoraWidgetsMenuItem: ContextMenuItem = {
+      content: "Sort LoRA widgets by name",
+      callback: (
+        _value: ContextMenuItem,
+        _options: IContextMenuOptions,
+        _event: MouseEvent,
+        _parentMenu: ContextMenu | undefined,
+        _node: TLGraphNode,
+      ) => {
+        const loraWidgets = this.getLoraWidgets();
+        const sortedWidgets = loraWidgets.toSorted((a, b) => a.getLoraLabel().localeCompare(b.getLoraLabel()));
+        const firstLoraWidget = this.widgets.findIndex(w => isLoraWidget(w));
+        this.widgets.splice(firstLoraWidget, sortedWidgets.length, ...sortedWidgets);
+      },
+    };
+    options.splice(options.length - 1, 0, fetchInfoMenuItem, fixPathsMenuItem, sortLoraWidgetsMenuItem);
   }
 
   private updateCommonPrefix() {
@@ -832,6 +847,10 @@ class PowerLoraLoaderWidget extends RgthreeBaseWidget<PowerLoraLoaderWidgetValue
 
     ctx.globalAlpha = app.canvas.editor_alpha;
     ctx.restore();
+  }
+
+  getLoraLabel() {
+    return this.getLoraName();
   }
 
   private getLoraName(commonPrefix = '', nameDisplay: NameDisplay = PROP_VALUE_NAME_OPTIONS_CIVITAI) {
