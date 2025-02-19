@@ -199,6 +199,7 @@ export abstract class RgthreeBaseWidget<T> implements IWidget<T, any> {
  */
 export class RgthreeBetterButtonWidget extends RgthreeBaseWidget<string> {
   value: string = "";
+  readonly type = "RgthreeBetterButtonWidget";
   mouseUpCallback: (event: AdjustedMouseEvent, pos: Vector2, node: LGraphNode) => boolean | void;
 
   constructor(
@@ -224,6 +225,7 @@ export class RgthreeBetterButtonWidget extends RgthreeBaseWidget<string> {
 export class RgthreeBetterTextWidget implements IWidget<string> {
   name: string;
   value: string;
+  readonly type = "RgthreeBetterTextWidget";
 
   constructor(name: string, value: string) {
     this.name = name;
@@ -267,6 +269,7 @@ export class RgthreeDividerWidget implements IWidget<null> {
   options = { serialize: false };
   value = null;
   name = "divider";
+  readonly type = "RgthreeDividerWidget";
 
   private readonly widgetOptions: RgthreeDividerWidgetOptions = {
     marginTop: 7,
@@ -320,6 +323,7 @@ export class RgthreeLabelWidget implements IWidget<null> {
   options = { serialize: false };
   value = null;
   name: string;
+  readonly type = "RgthreeLabelWidget"
 
   private readonly widgetOptions: RgthreeLabelWidgetOptions = {};
   private posY: number = 0;

@@ -106,6 +106,7 @@ export class RgthreeBetterButtonWidget extends RgthreeBaseWidget {
     constructor(name, mouseUpCallback) {
         super(name);
         this.value = "";
+        this.type = "RgthreeBetterButtonWidget";
         this.mouseUpCallback = mouseUpCallback;
     }
     draw(ctx, node, width, y, height) {
@@ -117,6 +118,7 @@ export class RgthreeBetterButtonWidget extends RgthreeBaseWidget {
 }
 export class RgthreeBetterTextWidget {
     constructor(name, value) {
+        this.type = "RgthreeBetterTextWidget";
         this.name = name;
         this.value = value;
     }
@@ -140,6 +142,7 @@ export class RgthreeDividerWidget {
         this.options = { serialize: false };
         this.value = null;
         this.name = "divider";
+        this.type = "RgthreeDividerWidget";
         this.widgetOptions = {
             marginTop: 7,
             marginBottom: 7,
@@ -170,6 +173,7 @@ export class RgthreeLabelWidget {
     constructor(name, widgetOptions) {
         this.options = { serialize: false };
         this.value = null;
+        this.type = "RgthreeLabelWidget";
         this.widgetOptions = {};
         this.posY = 0;
         this.name = name;
