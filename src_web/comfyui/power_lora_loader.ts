@@ -318,6 +318,8 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
     if (slot?.widget?.name?.startsWith("lora_")) {
       const widget = slot.widget as PowerLoraLoaderWidget;
       const index = this.widgets.indexOf(widget);
+      const firstLoraWidget = this.widgets.findIndex(widget => widget?.name?.startsWith("lora_"));
+      const lastLoraWidget = this.widgets.findLastIndex(widget => widget?.name?.startsWith("lora_"));
       const canMoveUp = !!this.widgets[index - 1]?.name?.startsWith("lora_");
       const canMoveDown = !!this.widgets[index + 1]?.name?.startsWith("lora_");
       const menuItems: ContextMenuItem[] = [
@@ -335,6 +337,13 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
           },
         },
         {
+          content: `⏫ Move To Top`,
+          disabled: !canMoveUp,
+          callback: () => {
+            moveArrayItem(this.widgets, widget, firstLoraWidget);
+          },
+        },
+        {
           content: `⬆️ Move Up`,
           disabled: !canMoveUp,
           callback: () => {
@@ -346,6 +355,13 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
           disabled: !canMoveDown,
           callback: () => {
             moveArrayItem(this.widgets, widget, index + 1);
+          },
+        },
+        {
+          content: `⏬ Move To Bottom`,
+          disabled: !canMoveDown,
+          callback: () => {
+            moveArrayItem(this.widgets, widget, lastLoraWidget);
           },
         },
         {

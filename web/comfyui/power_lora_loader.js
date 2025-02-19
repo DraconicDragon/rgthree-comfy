@@ -176,6 +176,8 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
         if ((_d = (_c = slot === null || slot === void 0 ? void 0 : slot.widget) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.startsWith("lora_")) {
             const widget = slot.widget;
             const index = this.widgets.indexOf(widget);
+            const firstLoraWidget = this.widgets.findIndex(widget => { var _c; return (_c = widget === null || widget === void 0 ? void 0 : widget.name) === null || _c === void 0 ? void 0 : _c.startsWith("lora_"); });
+            const lastLoraWidget = this.widgets.findLastIndex(widget => { var _c; return (_c = widget === null || widget === void 0 ? void 0 : widget.name) === null || _c === void 0 ? void 0 : _c.startsWith("lora_"); });
             const canMoveUp = !!((_f = (_e = this.widgets[index - 1]) === null || _e === void 0 ? void 0 : _e.name) === null || _f === void 0 ? void 0 : _f.startsWith("lora_"));
             const canMoveDown = !!((_h = (_g = this.widgets[index + 1]) === null || _g === void 0 ? void 0 : _g.name) === null || _h === void 0 ? void 0 : _h.startsWith("lora_"));
             const menuItems = [
@@ -193,6 +195,13 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                     },
                 },
                 {
+                    content: `⏫ Move To Top`,
+                    disabled: !canMoveUp,
+                    callback: () => {
+                        moveArrayItem(this.widgets, widget, firstLoraWidget);
+                    },
+                },
+                {
                     content: `⬆️ Move Up`,
                     disabled: !canMoveUp,
                     callback: () => {
@@ -204,6 +213,13 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                     disabled: !canMoveDown,
                     callback: () => {
                         moveArrayItem(this.widgets, widget, index + 1);
+                    },
+                },
+                {
+                    content: `⏬ Move To Bottom`,
+                    disabled: !canMoveDown,
+                    callback: () => {
+                        moveArrayItem(this.widgets, widget, lastLoraWidget);
                     },
                 },
                 {
