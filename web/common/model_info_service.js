@@ -48,6 +48,9 @@ class BaseModelInfoService extends EventTarget {
         }
         return info;
     }
+    async getCorrectedLoraPaths(loras) {
+        return await rgthreeApi.getCorrectedLoraPaths(loras);
+    }
     setFreshInfo(file, info) {
         this.fileToInfo.set(file, info);
     }
@@ -68,6 +71,13 @@ class LoraInfoService extends BaseModelInfoService {
     }
     apiClearInfo(file) {
         return rgthreeApi.clearLorasInfo(file);
+    }
+    handleLoraAsyncUpdate(event) {
+        var _a;
+        const info = (_a = event.detail) === null || _a === void 0 ? void 0 : _a.data;
+        if (info === null || info === void 0 ? void 0 : info.file) {
+            this.setFreshInfo(info.file, info);
+        }
     }
 }
 export const LORA_INFO_SERVICE = new LoraInfoService();

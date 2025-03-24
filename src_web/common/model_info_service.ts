@@ -76,11 +76,15 @@ abstract class BaseModelInfoService extends EventTarget {
     return info;
   }
 
+  async getCorrectedLoraPaths(loras: string[]) {
+    return await rgthreeApi.getCorrectedLoraPaths(loras);
+  }
+
   /**
    * Single point to set data into the info cache, and fire an event. Note, this doesn't determine
    * if the data is actually different.
    */
-  private setFreshInfo(file: string, info: RgthreeModelInfo) {
+  protected setFreshInfo(file: string, info: RgthreeModelInfo) {
     this.fileToInfo.set(file, info);
     // this.dispatchEvent(
     //   new CustomEvent("rgthree-model-service-lora-details", { detail: { lora: info } }),
@@ -105,6 +109,13 @@ class LoraInfoService extends BaseModelInfoService {
   }
   protected override apiClearInfo(file: string) {
     return rgthreeApi.clearLorasInfo(file);
+  }
+
+  private handleLoraAsyncUpdate(event: CustomEvent<{data: RgthreeModelInfo}>) {
+    const info = event.detail?.data as RgthreeModelInfo;
+    if (info?.file) {
+      this.setFreshInfo(info.file, info);
+    }
   }
 }
 

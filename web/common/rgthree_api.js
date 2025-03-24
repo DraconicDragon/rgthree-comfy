@@ -40,10 +40,25 @@ class RgthreeApi {
         return null;
     }
     async getLorasInfo(...args) {
-        return this.getModelInfo("loras", ...args);
+        const params = new URLSearchParams();
+        const isSingleLora = typeof args[0] == "string";
+        if (isSingleLora) {
+            params.set("file", args[0]);
+        }
+        params.set("light", (isSingleLora ? args[1] : args[0]) === false ? "0" : "1");
+        const path = `/loras/info?` + params.toString();
+        return await this.fetchApiJsonOrNull(path);
     }
     async refreshLorasInfo(file) {
         return this.refreshModelInfo("loras", file);
+    }
+    async getCorrectedLoraPaths(loras) {
+        const params = new URLSearchParams();
+        for (const lora of loras) {
+            params.append("file", lora);
+        }
+        const path = `/loras/info/correct_paths?` + params.toString();
+        return await this.fetchApiJsonOrNull(path);
     }
     async clearLorasInfo(file) {
         return this.clearModelInfo("loras", file);
