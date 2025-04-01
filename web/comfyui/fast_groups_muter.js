@@ -29,13 +29,6 @@ export class BaseFastGroupsModeChanger extends RgthreeBaseVirtualNode {
         this.addOutput("OPT_CONNECTION", "*");
         return super.onConstructed();
     }
-    configure(info) {
-        var _a;
-        if ((_a = info.outputs) === null || _a === void 0 ? void 0 : _a.length) {
-            info.outputs.length = 1;
-        }
-        super.configure(info);
-    }
     onAdded(graph) {
         FAST_GROUPS_SERVICE.addFastGroupNode(this);
     }
@@ -135,6 +128,8 @@ export class BaseFastGroupsModeChanger extends RgthreeBaseVirtualNode {
                 this.tempSize = [...this.size];
                 widget = this.addCustomWidget({
                     name: "RGTHREE_TOGGLE_AND_NAV",
+                    type: 'toggle',
+                    y: 0,
                     label: "",
                     value: false,
                     disabled: false,
@@ -189,7 +184,7 @@ export class BaseFastGroupsModeChanger extends RgthreeBaseVirtualNode {
                             }
                         }
                     },
-                    serializeValue(serializedNode, widgetIndex) {
+                    serializeValue(...args) {
                         return this.value;
                     },
                     mouse(event, pos, node) {

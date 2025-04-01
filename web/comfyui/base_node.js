@@ -1,12 +1,11 @@
 import { ComfyWidgets } from "../../scripts/widgets.js";
 import { SERVICE as KEY_EVENT_SERVICE } from "./services/key_events_services.js";
-import { app } from "../../scripts/app.js";
 import { LogLevel, rgthree } from "./rgthree.js";
 import { addHelpMenuItem } from "./utils.js";
 import { RgthreeHelpDialog } from "../../rgthree/common/dialog.js";
 import { importIndividualNodesInnerOnDragDrop, importIndividualNodesInnerOnDragOver, } from "./feature_import_individual_nodes.js";
 import { defineProperty } from "../../rgthree/common/shared_utils.js";
-export class RgthreeBaseNode extends LGraphNode {
+class RgthreeBaseNode extends LGraphNode {
     constructor(title = RgthreeBaseNode.title, skipOnConstructedCall = true) {
         super(title);
         this.comfyClass = "__NEED_COMFY_CLASS__";
@@ -27,9 +26,12 @@ export class RgthreeBaseNode extends LGraphNode {
             if (this.comfyClass == "__NEED_COMFY_CLASS__") {
                 throw new Error("RgthreeBaseNode needs a comfy class override.");
             }
+            if (this.constructor.type == "__NEED_CLASS_TYPE__") {
+                throw new Error("RgthreeBaseNode needs overrides.");
+            }
             this.checkAndRunOnConstructed();
         });
-        defineProperty(this, 'mode', {
+        defineProperty(this, "mode", {
             get: () => {
                 return this.rgthree_mode;
             },
@@ -80,7 +82,7 @@ export class RgthreeBaseNode extends LGraphNode {
     }
     clone() {
         const cloned = super.clone();
-        if (cloned.properties && !!window.structuredClone) {
+        if ((cloned === null || cloned === void 0 ? void 0 : cloned.properties) && !!window.structuredClone) {
             cloned.properties = structuredClone(cloned.properties);
         }
         return cloned;
@@ -91,6 +93,9 @@ export class RgthreeBaseNode extends LGraphNode {
         action;
     }
     removeWidget(widgetOrSlot) {
+        if (!this.widgets) {
+            return;
+        }
         if (typeof widgetOrSlot === "number") {
             this.widgets.splice(widgetOrSlot, 1);
         }
@@ -105,7 +110,7 @@ export class RgthreeBaseNode extends LGraphNode {
         var _a, _b;
         const menu_info = [];
         if ((_b = (_a = slot === null || slot === void 0 ? void 0 : slot.output) === null || _a === void 0 ? void 0 : _a.links) === null || _b === void 0 ? void 0 : _b.length) {
-            menu_info.push({ content: "Disconnect Links", slot: slot });
+            menu_info.push({ content: "Disconnect Links", slot });
         }
         let inputOrOutput = slot.input || slot.output;
         if (inputOrOutput) {
@@ -161,10 +166,12 @@ export class RgthreeBaseNode extends LGraphNode {
         if (help) {
             addHelpMenuItem(this, help, options);
         }
+        return options;
     }
 }
 RgthreeBaseNode.exposedActions = [];
 RgthreeBaseNode.title = "__NEED_CLASS_TITLE__";
+RgthreeBaseNode.type = "__NEED_CLASS_TYPE__";
 RgthreeBaseNode.category = "rgthree";
 RgthreeBaseNode._category = "rgthree";
 export class RgthreeBaseVirtualNode extends RgthreeBaseNode {
@@ -274,8 +281,8 @@ export class RgthreeBaseServerNode extends RgthreeBaseNode {
     static onRegisteredForOverride(comfyClass, rgthreeClass) {
     }
 }
-RgthreeBaseServerNode.nodeData = null;
 RgthreeBaseServerNode.nodeType = null;
+RgthreeBaseServerNode.nodeData = null;
 RgthreeBaseServerNode.__registeredForOverride__ = false;
 const OVERRIDDEN_SERVER_NODES = new Map();
 const oldregisterNodeType = LiteGraph.registerNodeType;

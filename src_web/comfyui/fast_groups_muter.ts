@@ -1,17 +1,21 @@
-import { app } from "scripts/app.js";
-import { RgthreeBaseVirtualNode } from "./base_node.js";
-import { NodeTypesString } from "./constants.js";
-import {
-  type LGraphNode,
-  type LGraph as TLGraph,
+
+import type {
+  LGraphNode,
+  LGraph as TLGraph,
   LGraphCanvas as TLGraphCanvas,
   Vector2,
-  SerializedLGraphNode,
-  IWidget,
-} from "typings/litegraph.js";
+  Size,
+} from "@comfyorg/litegraph";
+import type { ISerialisedNode } from "@comfyorg/litegraph/dist/types/serialisation.js";
+import type { IBooleanWidget } from "@comfyorg/litegraph/dist/types/widgets";
+import type { Point } from "@comfyorg/litegraph/dist/interfaces.js";
+
+import {app} from "scripts/app.js";
+import { RgthreeBaseVirtualNode } from "./base_node.js";
+import { NodeTypesString } from "./constants.js";
 import { SERVICE as FAST_GROUPS_SERVICE } from "./services/fast_groups_service.js";
 import { drawNodeWidget, fitString } from "./utils_canvas.js";
-import { RgthreeBaseVirtualNodeConstructor } from "typings/rgthree.js";
+import { CanvasMouseEvent } from "@comfyorg/litegraph/dist/types/events.js";
 
 const PROPERTY_SORT = "sort";
 const PROPERTY_SORT_CUSTOM_ALPHA = "customSortAlphabet";
@@ -49,6 +53,15 @@ export abstract class BaseFastGroupsModeChanger extends RgthreeBaseVirtualNode {
   };
   static "@customSortAlphabet" = { type: "string" };
 
+  override properties!: RgthreeBaseVirtualNode["properties"] & {
+    [PROPERTY_MATCH_COLORS]: string;
+    [PROPERTY_MATCH_TITLE]: string;
+    [PROPERTY_SHOW_NAV]: boolean;
+    [PROPERTY_SORT]: string;
+    [PROPERTY_SORT_CUSTOM_ALPHA]: string;
+    [PROPERTY_RESTRICTION]: string;
+  };
+
   static "@toggleRestriction" = {
     type: "combo",
     values: ["default", "max one", "always one"],
@@ -67,16 +80,6 @@ export abstract class BaseFastGroupsModeChanger extends RgthreeBaseVirtualNode {
   override onConstructed(): boolean {
     this.addOutput("OPT_CONNECTION", "*");
     return super.onConstructed();
-  }
-
-  override configure(info: SerializedLGraphNode<LGraphNode>): void {
-    // Patch a small issue (~14h) where multiple OPT_CONNECTIONS may have been created.
-    // https://github.com/rgthree/rgthree-comfy/issues/206
-    // TODO: This can probably be removed within a few weeks.
-    if (info.outputs?.length) {
-      info.outputs.length = 1;
-    }
-    super.configure(info);
   }
 
   override onAdded(graph: TLGraph): void {
@@ -187,9 +190,11 @@ export abstract class BaseFastGroupsModeChanger extends RgthreeBaseVirtualNode {
       if (!widget) {
         // When we add a widget, litegraph is going to mess up the size, so we
         // store it so we can retrieve it in computeSize. Hacky..
-        this.tempSize = [...this.size];
-        widget = this.addCustomWidget<IWidget<boolean>>({
+        this.tempSize = [...this.size] as Size;
+        widget = this.addCustomWidget<IBooleanWidget>({
           name: "RGTHREE_TOGGLE_AND_NAV",
+          type: 'toggle',
+          y: 0,
           label: "",
           value: false,
           disabled: false,
@@ -271,10 +276,10 @@ export abstract class BaseFastGroupsModeChanger extends RgthreeBaseVirtualNode {
               }
             }
           },
-          serializeValue(serializedNode: SerializedLGraphNode, widgetIndex: number) {
+          serializeValue(...args: any[]) {
             return this.value;
           },
-          mouse(event: PointerEvent, pos: Vector2, node: LGraphNode) {
+          mouse(event: CanvasMouseEvent, pos: Vector2, node: LGraphNode) {
             if (event.type == "pointerdown") {
               if (
                 node.properties?.[PROPERTY_SHOW_NAV] !== false &&
@@ -496,7 +501,7 @@ app.registerExtension({
   },
   loadedGraphNode(node: LGraphNode) {
     if (node.type == FastGroupsMuter.title) {
-      (node as FastGroupsMuter).tempSize = [...node.size];
+      (node as FastGroupsMuter).tempSize = [...node.size] as Point;
     }
   },
 });

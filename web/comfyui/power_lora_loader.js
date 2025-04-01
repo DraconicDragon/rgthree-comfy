@@ -241,9 +241,8 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                     },
                 },
             ];
-            let canvas = app.canvas;
-            new LiteGraph.ContextMenu(menuItems, { title: "LORA WIDGET", event: rgthree.lastAdjustedMouseEvent }, canvas.getCanvasWindow());
-            return null;
+            new LiteGraph.ContextMenu(menuItems, { title: "LORA WIDGET", event: rgthree.lastCanvasMouseEvent });
+            return undefined;
         }
         return this.defaultGetSlotMenuOptions(slot);
     }
@@ -275,10 +274,11 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
         return allOn && ((_d = this.widgets) === null || _d === void 0 ? void 0 : _d.length) ? true : false;
     }
     toggleAllLoras() {
+        var _b, _c;
         const allOn = this.allLorasState();
         const toggledTo = !allOn ? true : false;
         for (const widget of this.widgets) {
-            if (isLoraWidget(widget)) {
+            if ((isLoraWidget(widget)) || ((_c = widget.value) === null || _c === void 0 ? void 0 : _c.on) != null) {
                 widget.value.on = toggledTo;
             }
         }
@@ -505,8 +505,8 @@ class PowerLoraLoaderWidget extends RgthreeBaseWidget {
         ctx.fillStyle = LiteGraph.WIDGET_TEXT_COLOR;
         let rposX = node.size[0] - margin - innerMargin - innerMargin;
         const strengthValue = this.showModelAndClip
-            ? (_d = this.value.strengthTwo) !== null && _d !== void 0 ? _d : 1
-            : (_e = this.value.strength) !== null && _e !== void 0 ? _e : 1;
+            ? ((_c = this.value.strengthTwo) !== null && _c !== void 0 ? _c : 1)
+            : ((_d = this.value.strength) !== null && _d !== void 0 ? _d : 1);
         let textColor = undefined;
         if (((_f = this.loraInfo) === null || _f === void 0 ? void 0 : _f.strengthMax) != null && strengthValue > ((_g = this.loraInfo) === null || _g === void 0 ? void 0 : _g.strengthMax)) {
             textColor = "#c66";
@@ -588,7 +588,7 @@ class PowerLoraLoaderWidget extends RgthreeBaseWidget {
         const prunedLoraLabel = loraLabel.replace(/\.safetensors$/, '').substring(commonPrefix.length);
         return prunedLoraLabel;
     }
-    serializeValue(serializedNode, widgetIndex) {
+    serializeValue(node, index) {
         var _c;
         const v = { ...this.value };
         if (!this.showModelAndClip) {

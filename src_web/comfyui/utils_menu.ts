@@ -1,6 +1,3 @@
-import { app } from "scripts/app.js";
-import { rgthreeApi } from "rgthree/common/rgthree_api.js";
-
 import type {
   LGraphCanvas as TLGraphCanvas,
   IWidget,
@@ -8,7 +5,10 @@ import type {
   ContextMenuEventListener,
   ContextMenu,
   IContextMenuItem,
-} from "../typings/litegraph.js";
+} from "@comfyorg/litegraph";
+
+import {app} from "scripts/app.js";
+import {rgthreeApi} from "rgthree/common/rgthree_api.js";
 
 const PASS_THROUGH = function <T extends any, I extends any>(item: T) {
   return item as T;
@@ -18,7 +18,7 @@ const PASS_THROUGH = function <T extends any, I extends any>(item: T) {
  * Shows a lora chooser context menu.
  */
 export async function showLoraChooser(
-  event: PointerEvent,
+  event: PointerEvent | MouseEvent,
   callback: ContextMenuEventListener,
   parentMenu?: ContextMenu | null,
   loras?: string[],
@@ -28,8 +28,8 @@ export async function showLoraChooser(
     loras = ["None", ...(await rgthreeApi.getLoras())];
   }
   new LiteGraph.ContextMenu(loras, {
-    event,
-    parentMenu,
+    event: event,
+    parentMenu: parentMenu != null ? parentMenu : undefined,
     callback,
     title: "Choose a lora",
     scale: Math.max(1, canvas.ds?.scale ?? 1),
@@ -45,7 +45,7 @@ export async function showLoraChooser(
  *     it will be filtered out (rather than use a separate filter method).
  */
 export function showNodesChooser<T extends IContextMenuItem>(
-  event: PointerEvent,
+  event: PointerEvent | MouseEvent,
   mapFn: (n: LGraphNode) => T | null,
   callback: ContextMenuEventListener,
   parentMenu?: ContextMenu,

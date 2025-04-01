@@ -20,12 +20,18 @@ export function drawLabelAndValue(ctx, label, value, width, posY, height, option
 }
 export class RgthreeBaseWidget {
     constructor(name) {
+        this.type = "custom";
+        this.options = {};
+        this.y = 0;
         this.last_y = 0;
         this.mouseDowned = null;
         this.isMouseDownedAndOver = false;
         this.hitAreas = {};
         this.downedHitAreasForMove = [];
         this.name = name;
+    }
+    serializeValue(node, index) {
+        return this.value;
     }
     clickWasWithinBounds(pos, bounds) {
         let xStart = bounds[0];
@@ -116,9 +122,9 @@ export class RgthreeBetterButtonWidget extends RgthreeBaseWidget {
         return this.mouseUpCallback(event, pos, node);
     }
 }
-export class RgthreeBetterTextWidget {
+export class RgthreeBetterTextWidget extends RgthreeBaseWidget {
     constructor(name, value) {
-        this.type = "RgthreeBetterTextWidget";
+        super(name);
         this.name = name;
         this.value = value;
     }
@@ -137,12 +143,11 @@ export class RgthreeBetterTextWidget {
         return false;
     }
 }
-export class RgthreeDividerWidget {
+export class RgthreeDividerWidget extends RgthreeBaseWidget {
     constructor(widgetOptions) {
+        super("divider");
         this.options = { serialize: false };
-        this.value = null;
-        this.name = "divider";
-        this.type = "RgthreeDividerWidget";
+        this.value = '';
         this.widgetOptions = {
             marginTop: 7,
             marginBottom: 7,
@@ -169,14 +174,13 @@ export class RgthreeDividerWidget {
         ];
     }
 }
-export class RgthreeLabelWidget {
+export class RgthreeLabelWidget extends RgthreeBaseWidget {
     constructor(name, widgetOptions) {
+        super(name);
         this.options = { serialize: false };
-        this.value = null;
-        this.type = "RgthreeLabelWidget";
+        this.value = '';
         this.widgetOptions = {};
         this.posY = 0;
-        this.name = name;
         Object.assign(this.widgetOptions, widgetOptions);
     }
     draw(ctx, node, width, posY, height) {
@@ -227,18 +231,23 @@ export class RgthreeLabelWidget {
         return true;
     }
 }
-export class RgthreeInvisibleWidget {
+export class RgthreeInvisibleWidget extends RgthreeBaseWidget {
     constructor(name, type, value, serializeValueFn) {
-        this.serializeValue = undefined;
-        this.name = name;
-        this.type = type;
+        super(name);
         this.value = value;
-        if (serializeValueFn) {
-            this.serializeValue = serializeValueFn;
-        }
+        this.serializeValueFn = serializeValueFn;
     }
-    draw() { return; }
-    computeSize(width) { return [0, 0]; }
+    draw() {
+        return;
+    }
+    computeSize(width) {
+        return [0, 0];
+    }
+    serializeValue(node, index) {
+        return this.serializeValueFn != null
+            ? this.serializeValueFn(node, index)
+            : super.serializeValue(node, index);
+    }
 }
 export function drawWidgetButton(drawCtx, text, isMouseDownedAndOver = false) {
     if (!isLowQuality() && !isMouseDownedAndOver) {
