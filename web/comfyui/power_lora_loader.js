@@ -372,11 +372,12 @@ class PowerLoraLoaderHeaderWidgetPath extends RgthreeBaseWidget {
 class PowerLoraLoaderHeaderWidget extends RgthreeBaseWidget {
     constructor(name = "PowerLoraLoaderHeaderWidget") {
         super(name);
-        this.showModelAndClip = null;
         this.value = { type: "PowerLoraLoaderHeaderWidget" };
+        this.type = 'custom';
         this.hitAreas = {
             toggle: { bounds: [0, 0], onDown: this.onToggleDown },
         };
+        this.showModelAndClip = null;
     }
     draw(ctx, node, w, posY, height) {
         if (!node.hasLoraWidgets()) {
@@ -425,6 +426,7 @@ const DEFAULT_LORA_WIDGET_DATA = {
 class PowerLoraLoaderWidget extends RgthreeBaseWidget {
     constructor(name) {
         super(name);
+        this.type = 'custom';
         this.haveMouseMovedStrength = false;
         this.loraInfoPromise = null;
         this.loraInfo = null;

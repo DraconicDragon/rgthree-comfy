@@ -19,6 +19,24 @@ declare module "@comfyorg/litegraph" {
     rgthree_status?: "WARN" | "ERROR";
   }
 
+  interface LGraph {
+    // @rgthree (Fix): `result` arg is optional in impl.
+    findNodesByType(type: string, result?: LGraphNode[]): LGraphNode[];
+  }
+
+  interface LGraphNode {
+    // @rgthree (Fix): Implementation allows a falsy value to be returned and it will suppress the
+    // menu all together.
+    // NOTE: [🤮] We can't actually augment this because it's a return.. but keeping here because
+    // this is how it's actually implemented.
+    // getSlotMenuOptions?(this: LGraphNode, slot: IFoundSlot): IContextMenuValue[] | void;
+  }
+
+  interface LGraphGroup {
+    // @rgthree: Track whether a group has any active node from the fast group mode changers.
+    rgthree_hasAnyActiveNode?: boolean;
+  }
+
   interface LGraphCanvas {
     // @rgthree (Fix): At one point this was in ComfyUI's app.js. I don't see it now... perhaps it's
     // been removed? We were using it in rgthree-comfy.
