@@ -40,6 +40,9 @@ from .py.context_merge_big import RgthreeContextMergeBig
 from .py.image_comparer import RgthreeImageComparer
 from .py.power_lora_loader import RgthreePowerLoraLoader
 from .py.power_primitive import RgthreePowerPrimitive
+from .py.image_or_latent_size import RgthreeImageOrLatentSize
+from .py.image_resize import RgthreeImageResize
+from .py.power_puter import RgthreePowerPuter
 
 NODE_CLASS_MAPPINGS = {
   RgthreeBigContext.NAME: RgthreeBigContext,
@@ -63,6 +66,9 @@ NODE_CLASS_MAPPINGS = {
   RgthreeImageComparer.NAME: RgthreeImageComparer,
   RgthreePowerLoraLoader.NAME: RgthreePowerLoraLoader,
   RgthreePowerPrimitive.NAME: RgthreePowerPrimitive,
+  RgthreeImageOrLatentSize.NAME: RgthreeImageOrLatentSize,
+  RgthreeImageResize.NAME: RgthreeImageResize,
+  RgthreePowerPuter.NAME: RgthreePowerPuter,
 }
 
 if get_config_value('unreleased.dynamic_context.enabled') is True:
