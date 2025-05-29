@@ -2,9 +2,14 @@
   "compilerOptions": {
     "target": "es2019",
     "module": "ESNext",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2023"
+    ],
     // "typeRoots": [
-    //   "./ts/typings",
-    // ],
+      //   "./ts/typings",
+      // ],
     "baseUrl": "./",
     "paths": {
       // `@comfyorg/litegraph` is how ComfyUi-Frontend augments litegraph.d.ts, so we should match.

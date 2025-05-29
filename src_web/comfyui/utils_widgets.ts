@@ -237,6 +237,7 @@ export class RgthreeBetterButtonWidget extends RgthreeBaseWidget<string> {
  */
 export class RgthreeBetterTextWidget extends RgthreeBaseWidget<string> {
   value: string;
+  readonly type = "RgthreeBetterTextWidget";
 
   constructor(name: string, value: string) {
     super(name);

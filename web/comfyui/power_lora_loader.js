@@ -19,6 +19,10 @@ const PROP_LABEL_NAME_OPTIONS = "Display name type";
 const PROP_LABEL_NAME_OPTIONS_STATIC = `@${PROP_LABEL_NAME_OPTIONS}`;
 const PROP_VALUE_NAME_OPTIONS_FILENAME = "LoRA Filename";
 const PROP_VALUE_NAME_OPTIONS_CIVITAI = "Civitai Name (if fetched)";
+function isLoraWidget(widget) {
+    var _c, _d;
+    return (_d = (_c = widget === null || widget === void 0 ? void 0 : widget.name) === null || _c === void 0 ? void 0 : _c.startsWith("lora_")) !== null && _d !== void 0 ? _d : false;
+}
 class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
     constructor(title = NODE_CLASS.title) {
         super(title);
@@ -102,7 +106,16 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                 });
             },
         };
-        options.splice(options.length - 1, 0, fetchInfoMenuItem, fixPathsMenuItem);
+        const sortLoraWidgetsMenuItem = {
+            content: "Sort LoRA widgets by name",
+            callback: (_value, _options, _event, _parentMenu, _node) => {
+                const loraWidgets = this.getLoraWidgets();
+                const sortedWidgets = loraWidgets.toSorted((a, b) => a.getLoraLabel().localeCompare(b.getLoraLabel()));
+                const firstLoraWidget = this.widgets.findIndex(w => isLoraWidget(w));
+                this.widgets.splice(firstLoraWidget, sortedWidgets.length, ...sortedWidgets);
+            },
+        };
+        options.splice(options.length - 1, 0, fetchInfoMenuItem, fixPathsMenuItem, sortLoraWidgetsMenuItem);
     }
     updateCommonPrefix() {
         if (!this.hasLoraWidgets) {
@@ -153,7 +166,6 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
         }));
     }
     getSlotInPosition(canvasX, canvasY) {
-        var _c;
         const slot = super.getSlotInPosition(canvasX, canvasY);
         if (!slot) {
             let lastWidget = null;
@@ -166,19 +178,20 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                 }
                 break;
             }
-            if ((_c = lastWidget === null || lastWidget === void 0 ? void 0 : lastWidget.name) === null || _c === void 0 ? void 0 : _c.startsWith("lora_")) {
+            if (isLoraWidget(lastWidget)) {
                 return { widget: lastWidget, output: { type: "LORA WIDGET" } };
             }
         }
         return slot;
     }
     getSlotMenuOptions(slot) {
-        var _c, _d, _e, _f, _g, _h;
-        if ((_d = (_c = slot === null || slot === void 0 ? void 0 : slot.widget) === null || _c === void 0 ? void 0 : _c.name) === null || _d === void 0 ? void 0 : _d.startsWith("lora_")) {
+        if (isLoraWidget(slot === null || slot === void 0 ? void 0 : slot.widget)) {
             const widget = slot.widget;
             const index = this.widgets.indexOf(widget);
-            const canMoveUp = !!((_f = (_e = this.widgets[index - 1]) === null || _e === void 0 ? void 0 : _e.name) === null || _f === void 0 ? void 0 : _f.startsWith("lora_"));
-            const canMoveDown = !!((_h = (_g = this.widgets[index + 1]) === null || _g === void 0 ? void 0 : _g.name) === null || _h === void 0 ? void 0 : _h.startsWith("lora_"));
+            const firstLoraWidget = this.widgets.findIndex(widget => isLoraWidget(widget));
+            const lastLoraWidget = this.widgets.findLastIndex(widget => isLoraWidget(widget));
+            const canMoveUp = isLoraWidget(this.widgets[index - 1]);
+            const canMoveDown = isLoraWidget(this.widgets[index + 1]);
             const menuItems = [
                 {
                     content: `ℹ️ Show Info`,
@@ -194,6 +207,13 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                     },
                 },
                 {
+                    content: `⏫ Move To Top`,
+                    disabled: !canMoveUp,
+                    callback: () => {
+                        moveArrayItem(this.widgets, widget, firstLoraWidget);
+                    },
+                },
+                {
                     content: `⬆️ Move Up`,
                     disabled: !canMoveUp,
                     callback: () => {
@@ -205,6 +225,13 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                     disabled: !canMoveDown,
                     callback: () => {
                         moveArrayItem(this.widgets, widget, index + 1);
+                    },
+                },
+                {
+                    content: `⏬ Move To Bottom`,
+                    disabled: !canMoveDown,
+                    callback: () => {
+                        moveArrayItem(this.widgets, widget, lastLoraWidget);
                     },
                 },
                 {
@@ -228,19 +255,19 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
     }
     hasLoraWidgets() {
         var _c;
-        return !!((_c = this.widgets) === null || _c === void 0 ? void 0 : _c.find((w) => { var _c; return (_c = w.name) === null || _c === void 0 ? void 0 : _c.startsWith("lora_"); }));
+        return (_c = this.widgets) === null || _c === void 0 ? void 0 : _c.some((w) => isLoraWidget(w));
     }
     getLoraWidgets() {
         var _c, _d, _e;
-        return (_e = (_d = (_c = this.widgets) === null || _c === void 0 ? void 0 : _c.filter((w) => { var _c; return (_c = w.name) === null || _c === void 0 ? void 0 : _c.startsWith("lora_"); })) === null || _d === void 0 ? void 0 : _d.filter((w) => w instanceof PowerLoraLoaderWidget)) !== null && _e !== void 0 ? _e : [];
+        return (_e = (_d = (_c = this.widgets) === null || _c === void 0 ? void 0 : _c.filter((w) => isLoraWidget(w))) === null || _d === void 0 ? void 0 : _d.filter((w) => w instanceof PowerLoraLoaderWidget)) !== null && _e !== void 0 ? _e : [];
     }
     allLorasState() {
-        var _c, _d, _e;
+        var _c, _d;
         let allOn = true;
         let allOff = true;
         for (const widget of this.widgets) {
-            if ((_c = widget.name) === null || _c === void 0 ? void 0 : _c.startsWith("lora_")) {
-                const on = (_d = widget.value) === null || _d === void 0 ? void 0 : _d.on;
+            if (isLoraWidget(widget)) {
+                const on = (_c = widget.value) === null || _c === void 0 ? void 0 : _c.on;
                 allOn = allOn && on === true;
                 allOff = allOff && on === false;
                 if (!allOn && !allOff) {
@@ -248,7 +275,7 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                 }
             }
         }
-        return allOn && ((_e = this.widgets) === null || _e === void 0 ? void 0 : _e.length) ? true : false;
+        return allOn && ((_d = this.widgets) === null || _d === void 0 ? void 0 : _d.length) ? true : false;
     }
     toggleAllLoras() {
         var _b, _c;
@@ -554,6 +581,9 @@ class PowerLoraLoaderWidget extends RgthreeBaseWidget {
         posX += loraWidth + innerMargin;
         ctx.globalAlpha = app.canvas.editor_alpha;
         ctx.restore();
+    }
+    getLoraLabel() {
+        return this.getLoraName();
     }
     getLoraName(commonPrefix = '', nameDisplay = PROP_VALUE_NAME_OPTIONS_CIVITAI) {
         var _c, _d;
