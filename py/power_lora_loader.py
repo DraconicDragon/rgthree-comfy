@@ -64,7 +64,7 @@ class RgthreePowerLoraLoader:
     for lora, strength_model, strength_clip in lora_stack:
         model, clip = LoraLoader().load_lora(model, clip, lora, strength_model, strength_clip)
 
-    return (model, clip)
+    return (model, clip, lora_stack)
 
   @classmethod
   def get_enabled_loras_from_prompt_node(cls, prompt_node: dict) -> list[dict[str, str | float]]:
@@ -84,10 +84,18 @@ class RgthreePowerLoraLoader:
     for lora in loras:
       info = asyncio.run(get_model_info(lora, 'loras'))
       if not info or not info.keys():
-        log_node_warn(NODE_NAME, f'No info found for lora {lora} when grabbing triggers.')
+        log_node_warn(
+          NODE_NAME,
+          f'No info found for lora {lora} when grabbing triggers. Have you generated an info file'
+          ' from the Power Lora Loader "Show Info" dialog?'
+        )
         continue
       if 'trainedWords' not in info or not info['trainedWords']:
-        log_node_warn(NODE_NAME, f'No trained words for lora {lora} when grabbing triggers.')
+        log_node_warn(
+          NODE_NAME,
+          f'No trained words for lora {lora} when grabbing triggers. Have you fetched data from'
+          'civitai or manually added words?'
+        )
         continue
       trained_words += [w for wi in info['trainedWords'][:max_each] if (wi and (w := wi['word']))]
     return trained_words

@@ -162,11 +162,11 @@ class RgthreePowerPuter:
     workflow = pnginfo["workflow"] if "workflow" in pnginfo else {"nodes": []}
     prompt = kwargs['prompt']
 
-    ctx = {**kwargs}
-    del ctx['output']
-    del ctx['code']
-    del ctx['extra_pnginfo']
-    del ctx['prompt']
+    ctx = {}
+    # Set variable names, defaulting to None instead of KeyErrors
+    for c in list('abcdefghijklmnopqrstuvwxyz'):
+      ctx[c] = kwargs[c] if c in kwargs else None
+
 
     # Clean the code before evaluating. For now, we just change usage of `input_node` so the passed
     # variable is a string, if it isn't (instead of `input_node(a)` it's to be `input_node('a')`.
@@ -326,11 +326,11 @@ class _Puter:
             raise
       return val
 
-    if isinstance(stmt, ast.List):
+    if isinstance(stmt, (ast.List, ast.Tuple)):
       value = []
       for elt in stmt.elts:
         value.append(self._eval_statement(elt, ctx=ctx))
-      return value
+      return tuple(value) if isinstance(stmt, ast.Tuple) else value
 
     # f-strings: https://www.basicexamples.com/example/python/ast-JoinedStr
     # Note, this will str() all evaluated items in the fstrings, and doesn't handle f-string
@@ -372,7 +372,7 @@ class _Puter:
         # A call, like my_dct.items(), or a named ctx list
         if isinstance(gen.iter, ast.Call):
           gen_iters = self._eval_statement(gen.iter, ctx=gen_ctx)
-        elif isinstance(gen.iter, (ast.Name, ast.Attribute)):
+        elif isinstance(gen.iter, (ast.Name, ast.Attribute, ast.List, ast.Tuple)):
           gen_iters = self._eval_statement(gen.iter, ctx=gen_ctx)
 
         for gen_iter in gen_iters:

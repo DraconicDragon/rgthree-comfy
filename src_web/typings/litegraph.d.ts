@@ -14,6 +14,65 @@ declare module "@comfyorg/litegraph" {
     // @rgthree: Used to "disable" an input/output. Used in PowerPrompt to disallow connecting
     // an output if there's no optional corresponding input (since, that would just break).
     disabled?: boolean;
+    callback?: WidgetCallback<this>;
+    /** Called by `LGraphCanvas.drawNodeWidgets` */
+    draw?(
+        ctx: CanvasRenderingContext2D,
+        node: LGraphNode,
+        width: number,
+        posY: number,
+        height: number
+    ): void;
+    /**
+     * Called by `LGraphCanvas.processNodeWidgets`
+     * https://github.com/jagenjo/litegraph.js/issues/76
+     */
+    mouse?(
+        event: MouseEvent,
+        pos: Vector2,
+        node: LGraphNode
+    ): boolean;
+    /** Called by `LGraphNode.computeSize` */
+    computeSize?(width: number): [number, number];
+    // @rgthree - make optional, since it is in the code.
+    serializeValue?(serializedNode: SerializedLGraphNode, widgetIndex: number): TValue;
+    // @rgthree - Checked in LGraphCanvas.prototype.processNodeWidgets, and figured I'd use it too.
+    width?: number;
+}
+export interface IButtonWidget extends IWidget<null, {}> {
+    type: "button";
+}
+// @rgthree: adding options
+export interface IToggleWidget extends IWidget<boolean, IWidgetToggleOptions> {
+    type: "toggle";
+}
+// @rgthree: adding options
+export interface ISliderWidget extends IWidget<number, IWidgetSliderOptions> {
+    type: "slider";
+}
+// @rgthree: adding options
+export interface INumberWidget extends IWidget<number, IWidgetNumberOptions> {
+    type: "number";
+}
+// @rgthree: adding options
+export interface IComboWidget extends IWidget<string[], IWidgetComboOptions> {
+    value: T[0];
+    type: "combo";
+    callback?: WidgetComboCallback;
+}
+
+export interface ITextWidget extends IWidget<string, {}> {
+    type: "text";
+}
+
+export interface IContextMenuItem {
+    // @rgthree - Make optional because, I guess it is?
+    content?: string;
+    value?: any;
+    callback?: ContextMenuEventListener;
+    /** Used as innerHTML for extra child element */
+    title?: string;
+    disabled?: boolean;
 
     // @rgthree: A status we put on some nodes so we can draw things around it.
     rgthree_status?: "WARN" | "ERROR";

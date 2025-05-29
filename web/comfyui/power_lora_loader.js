@@ -144,7 +144,8 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
         moveArrayItem(this.widgets, this.addCustomWidget(new PowerLoraLoaderHeaderWidget()), 2);
         this.widgetButtonSpacer = this.addCustomWidget(new RgthreeDividerWidget({ marginTop: 4, marginBottom: 0, thickness: 0 }));
         this.addCustomWidget(new RgthreeBetterButtonWidget("➕ Add Lora", (event, pos, node) => {
-            rgthreeApi.getLoras().then((loras) => {
+            rgthreeApi.getLoras().then((lorasDetails) => {
+                const loras = lorasDetails.map((l) => l.file);
                 showLoraChooser(event, (value, _options, leafEvent) => {
                     var _c;
                     if (typeof value === "string") {
@@ -241,7 +242,10 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
                     },
                 },
             ];
-            new LiteGraph.ContextMenu(menuItems, { title: "LORA WIDGET", event: rgthree.lastCanvasMouseEvent });
+            new LiteGraph.ContextMenu(menuItems, {
+                title: "LORA WIDGET",
+                event: rgthree.lastCanvasMouseEvent,
+            });
             return undefined;
         }
         return this.defaultGetSlotMenuOptions(slot);
@@ -278,7 +282,7 @@ class RgthreePowerLoraLoader extends RgthreeBaseServerNode {
         const allOn = this.allLorasState();
         const toggledTo = !allOn ? true : false;
         for (const widget of this.widgets) {
-            if ((isLoraWidget(widget)) || ((_c = widget.value) === null || _c === void 0 ? void 0 : _c.on) != null) {
+            if (((_b = widget.name) === null || _b === void 0 ? void 0 : _b.startsWith("lora_")) && ((_c = widget.value) === null || _c === void 0 ? void 0 : _c.on) != null) {
                 widget.value.on = toggledTo;
             }
         }
@@ -373,7 +377,7 @@ class PowerLoraLoaderHeaderWidget extends RgthreeBaseWidget {
     constructor(name = "PowerLoraLoaderHeaderWidget") {
         super(name);
         this.value = { type: "PowerLoraLoaderHeaderWidget" };
-        this.type = 'custom';
+        this.type = "custom";
         this.hitAreas = {
             toggle: { bounds: [0, 0], onDown: this.onToggleDown },
         };
@@ -426,7 +430,7 @@ const DEFAULT_LORA_WIDGET_DATA = {
 class PowerLoraLoaderWidget extends RgthreeBaseWidget {
     constructor(name) {
         super(name);
-        this.type = 'custom';
+        this.type = "custom";
         this.haveMouseMovedStrength = false;
         this.loraInfoPromise = null;
         this.loraInfo = null;
@@ -507,8 +511,8 @@ class PowerLoraLoaderWidget extends RgthreeBaseWidget {
         ctx.fillStyle = LiteGraph.WIDGET_TEXT_COLOR;
         let rposX = node.size[0] - margin - innerMargin - innerMargin;
         const strengthValue = this.showModelAndClip
-            ? ((_c = this.value.strengthTwo) !== null && _c !== void 0 ? _c : 1)
-            : ((_d = this.value.strength) !== null && _d !== void 0 ? _d : 1);
+            ? ((_d = this.value.strengthTwo) !== null && _d !== void 0 ? _d : 1)
+            : ((_e = this.value.strength) !== null && _e !== void 0 ? _e : 1);
         let textColor = undefined;
         if (((_f = this.loraInfo) === null || _f === void 0 ? void 0 : _f.strengthMax) != null && strengthValue > ((_g = this.loraInfo) === null || _g === void 0 ? void 0 : _g.strengthMax)) {
             textColor = "#c66";
