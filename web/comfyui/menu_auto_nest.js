@@ -8,7 +8,7 @@ app.registerExtension({
         const logger = rgthree.newLogSession("[ContextMenuAutoNest]");
         const existingContextMenu = LiteGraph.ContextMenu;
         LiteGraph.ContextMenu = function (values, options) {
-            var _a, _b, _c, _d, _e, _f, _g, _h;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
             const threshold = CONFIG_SERVICE.getConfigValue("features.menu_auto_nest.threshold", 20);
             const enabled = CONFIG_SERVICE.getConfigValue("features.menu_auto_nest.subdirs", false);
             let incompatible = !enabled || !!((_a = options === null || options === void 0 ? void 0 : options.extra) === null || _a === void 0 ? void 0 : _a.rgthree_doNotNest);
@@ -64,19 +64,38 @@ app.registerExtension({
                     options.rgthree_originalCallback ||
                         ((_f = (_e = options.parentMenu) === null || _e === void 0 ? void 0 : _e.options) === null || _f === void 0 ? void 0 : _f.rgthree_originalCallback) ||
                         options.callback;
-                const oldCallback = options === null || options === void 0 ? void 0 : options.rgthree_originalCallback;
+                options.rgthree_allowAllFolderItems =
+                    (_g = (_e = options.rgthree_allowAllFolderItems) !== null && _e !== void 0 ? _e : (_f = options.parentMenu) === null || _f === void 0 ? void 0 : _f.options.rgthree_allowAllFolderItems) !== null && _g !== void 0 ? _g : false;
+                const oldCallback = options.rgthree_originalCallback;
                 options.callback = undefined;
                 const newCallback = (item, options, event, parentMenu, node) => {
-                    oldCallback === null || oldCallback === void 0 ? void 0 : oldCallback(item === null || item === void 0 ? void 0 : item.rgthree_originalValue, options, event, undefined, node);
+                    return oldCallback === null || oldCallback === void 0 ? void 0 : oldCallback(item === null || item === void 0 ? void 0 : item.rgthree_originalValue, options, event, undefined, node);
                 };
                 const [n, v] = logger.infoParts(`Nested folders found (${foldersCount}).`);
-                (_g = console[n]) === null || _g === void 0 ? void 0 : _g.call(console, ...v);
+                (_h = console[n]) === null || _h === void 0 ? void 0 : _h.call(console, ...v);
                 const newValues = [];
                 for (const [folderName, folderValues] of Object.entries(folders)) {
                     newValues.push({
                         content: `📁 ${folderName}`,
                         has_submenu: true,
-                        callback: () => {
+                        callback: (_value, options, event, parentMenu, node) => {
+                            var _a;
+                            if (!(options.rgthree_allowAllFolderItems && event.ctrlKey && event.shiftKey)) {
+                                return false;
+                            }
+                            if (folderValues.length > 10 && !window.confirm(`This would run the menu operation on ${folderValues.length} items. Are you sure?`)) {
+                                return false;
+                            }
+                            for (const value of folderValues) {
+                                (_a = value === null || value === void 0 ? void 0 : value.callback) === null || _a === void 0 ? void 0 : _a.call(value, value, options, event, parentMenu, node);
+                            }
+                            let rootMenu = parentMenu;
+                            while (rootMenu === null || rootMenu === void 0 ? void 0 : rootMenu.parentMenu) {
+                                rootMenu = rootMenu.parentMenu;
+                            }
+                            rootMenu === null || rootMenu === void 0 ? void 0 : rootMenu.close();
+                            _value.submenu = undefined;
+                            return false;
                         },
                         submenu: {
                             options: folderValues.map((value) => {
@@ -101,7 +120,7 @@ app.registerExtension({
                 }));
             }
             if (options.scale == null) {
-                options.scale = Math.max(((_h = app.canvas.ds) === null || _h === void 0 ? void 0 : _h.scale) || 1, 1);
+                options.scale = Math.max(((_j = app.canvas.ds) === null || _j === void 0 ? void 0 : _j.scale) || 1, 1);
             }
             const oldCtrResponse = existingContextMenu.call(this, values, options);
             if (oldCtrResponse === null || oldCtrResponse === void 0 ? void 0 : oldCtrResponse.constructor) {

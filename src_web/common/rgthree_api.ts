@@ -99,7 +99,18 @@ class RgthreeApi {
    * @param light Whether or not to generate a json file if there isn't one. This isn't necessary if
    * we're just checking for values, but is more necessary when opening an info dialog.
    */
-
+  async getLorasInfo(lora: string, light?: boolean): Promise<RgthreeModelInfo | null>;
+  async getLorasInfo(light?: boolean): Promise<RgthreeModelInfo[] | null>;
+  async getLorasInfo(...args: any) {
+    const params = new URLSearchParams();
+    const isSingleLora = typeof args[0] == "string";
+    if (isSingleLora) {
+      params.set("file", args[0]);
+    }
+    params.set("light", (isSingleLora ? args[1] : args[0]) === false ? "0" : "1");
+    const path = `/loras/info?` + params.toString();
+    return await this.fetchApiJsonOrNull<RgthreeModelInfo[] | RgthreeModelInfo>(path);
+  }
   async getModelsInfo(options: GetModelsInfoOptions): Promise<RgthreeModelInfo[]> {
     const params = new URLSearchParams();
     if (options.files?.length) {
@@ -113,6 +124,20 @@ class RgthreeApi {
     }
     const path = `/${options.type}/info?` + params.toString();
     return (await this.fetchApiJsonOrNull<RgthreeModelInfo[]>(path)) || [];
+  }
+  async refreshLorasInfo(file: string): Promise<RgthreeModelInfo | null>;
+  async refreshLorasInfo(): Promise<RgthreeModelInfo[] | null>;
+  async refreshLorasInfo(file?: string) {
+    return this.refreshModelInfo("loras", file);
+  }
+
+  async getCorrectedLoraPaths(loras: string[]): Promise<Record<string, string | undefined> | null> {
+    const params = new URLSearchParams();
+    for (const lora of loras) {
+      params.append("file", lora);
+    }
+    const path = `/loras/info/correct_paths?` + params.toString();
+    return await this.fetchApiJsonOrNull<Record<string, string | undefined>>(path);
   }
   async getLorasInfo(options: Omit<GetModelsInfoOptions, "type"> = {}) {
     return this.getModelsInfo({type: "loras", ...options});
