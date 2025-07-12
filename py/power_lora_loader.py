@@ -59,13 +59,14 @@ class RgthreePowerLoraLoader:
           lora = get_lora_by_filename(value['lora'], log_node=self.NAME)
           if lora is not None:
             lora_stack.extend([(lora, strength_model, strength_clip)])
-
+          if model is not None and lora is not None:
+            model, clip = LoraLoader().load_lora(model, clip, lora, strength_model, strength_clip)
     # Apply the accumulated LoRAs to the provided model
     # This would be a place to fork to say:
     # - only apply the LoRA in this node
     # - apply the ones here and in the stack
-    for lora, strength_model, strength_clip in lora_stack:
-        model, clip = LoraLoader().load_lora(model, clip, lora, strength_model, strength_clip)
+    #for lora, strength_model, strength_clip in lora_stack:
+    #    model, clip = LoraLoader().load_lora(model, clip, lora, strength_model, strength_clip)
 
     return (model, clip, lora_stack)
 
