@@ -1,5 +1,5 @@
 import type {Parser, Node, Tree} from "web-tree-sitter";
-import type {IStringWidget, IWidget} from "@comfyorg/litegraph/dist/types/widgets";
+import type {IStringWidget, IWidget} from "@comfyorg/frontend";
 
 import {app} from "scripts/app.js";
 import {Exposed, execute, PyTuple} from "rgthree/common/py_parser.js";
@@ -8,6 +8,7 @@ import {RgthreeBetterButtonWidget} from "./utils_widgets.js";
 import {NodeTypesString} from "./constants.js";
 import {ComfyWidgets} from "scripts/widgets.js";
 import {SERVICE as CONFIG_SERVICE} from "./services/config_service.js";
+import { changeModeOfNodes, getNodeById } from "./utils.js";
 
 const BUILT_INS = {
   node: {
@@ -62,7 +63,7 @@ class ComfyNodeWrapper {
   }
 
   private getNode() {
-    return app.graph.getNodeById(this.#id)!;
+    return getNodeById(this.#id)!;
   }
 
   @Exposed get id() {
@@ -77,7 +78,7 @@ class ComfyNodeWrapper {
   }
 
   @Exposed get widgets() {
-    return new PyTuple(this.getNode().widgets?.map((w) => new ComfyWidgetWrapper(w)));
+    return new PyTuple(this.getNode().widgets?.map((w) => new ComfyWidgetWrapper(w as IWidget)));
   }
 
   @Exposed get mode() {
@@ -85,15 +86,15 @@ class ComfyNodeWrapper {
   }
 
   @Exposed mute() {
-    this.getNode().mode = 2;
+    changeModeOfNodes(this.getNode(), 2);
   }
 
   @Exposed bypass() {
-    this.getNode().mode = 4;
+    changeModeOfNodes(this.getNode(), 4);
   }
 
   @Exposed enable() {
-    this.getNode().mode = 0;
+    changeModeOfNodes(this.getNode(), 0);
   }
 }
 

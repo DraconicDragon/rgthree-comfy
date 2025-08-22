@@ -23,6 +23,7 @@ import { RgthreeBetterButtonWidget } from "./utils_widgets.js";
 import { NodeTypesString } from "./constants.js";
 import { ComfyWidgets } from "../../scripts/widgets.js";
 import { SERVICE as CONFIG_SERVICE } from "./services/config_service.js";
+import { changeModeOfNodes, getNodeById } from "./utils.js";
 const BUILT_INS = {
     node: {
         fn: (query) => {
@@ -59,7 +60,7 @@ class ComfyNodeWrapper {
         __classPrivateFieldSet(this, _ComfyNodeWrapper_id, id, "f");
     }
     getNode() {
-        return app.graph.getNodeById(__classPrivateFieldGet(this, _ComfyNodeWrapper_id, "f"));
+        return getNodeById(__classPrivateFieldGet(this, _ComfyNodeWrapper_id, "f"));
     }
     get id() {
         return this.getNode().id;
@@ -78,13 +79,13 @@ class ComfyNodeWrapper {
         return this.getNode().mode;
     }
     mute() {
-        this.getNode().mode = 2;
+        changeModeOfNodes(this.getNode(), 2);
     }
     bypass() {
-        this.getNode().mode = 4;
+        changeModeOfNodes(this.getNode(), 4);
     }
     enable() {
-        this.getNode().mode = 0;
+        changeModeOfNodes(this.getNode(), 0);
     }
 }
 _ComfyNodeWrapper_id = new WeakMap();
