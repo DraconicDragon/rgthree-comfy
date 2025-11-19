@@ -2,10 +2,11 @@ import os
 import json
 from aiohttp import web
 
+from ..log import log
 from server import PromptServer
 import folder_paths
 
-from ..utils import path_exists
+from ..utils import abspath, path_exists
 from .utils_server import get_param, is_param_falsy
 from .utils_info import delete_model_info, get_model_info, set_model_info_partial, get_file_info
 from ..power_prompt_utils import get_lora_by_filename
@@ -36,8 +37,29 @@ async def api_get_models_list(request):
   format_param = get_param(request, 'format')
   if format_param == 'details':
     response = []
+    bad_files_first = None
+    bad_files_num = 0
     for file in files:
-      response.append(get_file_info(file, model_type))
+      file_info = get_file_info(file, model_type)
+      # Some folks were seeing null in this list, which is odd since it's coming from ComfyUI files.
+      # See https://github.com/rgthree/rgthree-comfy/issues/574#issuecomment-3494629132 We'll check
+      # and log if we haven't found, maybe someone will have more info.
+      if file_info is not None:
+        response.append(file_info)
+      else:
+        bad_files_num += 1
+        if not bad_files_first:
+          bad_files_first = file
+    if bad_files_first:
+      log(
+        f"Couldn't get file info for {bad_files_first}"
+        f"{f' and {bad_files_num} other {model_type}.' if bad_files_num > 1 else '.'} "
+        "ComfyUI thinks they exist, but they were not found on the filesystem.",
+        prefix="Power Lora Loader",
+        color="YELLOW",
+        id=f'no_file_details_{model_type}',
+        at_most_secs=30
+      )
     return web.json_response(response)
 
   return web.json_response(list(files))
@@ -138,8 +160,7 @@ async def api_get_models_info_img(request):
   file_param = get_param(request, 'file')
   file_path = folder_paths.get_full_path(model_type, file_param)
   if not path_exists(file_path):
-    file_path = os.path.abspath(file_path)
-
+    file_path = abspath(file_path)
   img_path = None
   for ext in ['jpg', 'png', 'jpeg']:
     try_path = f'{os.path.splitext(file_path)[0]}.{ext}'
