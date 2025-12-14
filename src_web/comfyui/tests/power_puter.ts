@@ -3,16 +3,17 @@ import type {LGraphNode} from "@comfyorg/frontend";
 import {NodeTypesString} from "../constants";
 import {ComfyUITestEnvironment} from "../testing/comfyui_env";
 import {describe, should, beforeEach, expect, describeRun} from "../testing/runner.js";
+import {pasteImageToLoadImageNode, PNG_1x1, PNG_1x2, PNG_2x1} from "../testing/utils_test.js";
 
 const env = new ComfyUITestEnvironment();
 
 function setPowerPuterValue(node: LGraphNode, outputType: string, value: string) {
   // Strip as much whitespace on first non-empty line from all lines.
-  if (value.includes('\n')) {
-    value = value.replace(/^\n/gm, '')
+  if (value.includes("\n")) {
+    value = value.replace(/^\n/gm, "");
     const strip = value.match(/^(.*?)\S/)?.[1]?.length;
     if (strip) {
-      value = value.replace(new RegExp(`^.{${strip}}`, 'mg'), '')
+      value = value.replace(new RegExp(`^.{${strip}}`, "mg"), "");
     }
   }
   node.widgets![1]!.value = value;
@@ -106,5 +107,56 @@ describe("TestPowerPuter", async () => {
     );
     await env.queuePrompt();
     expect(displayAny.widgets![0]!.value).toBe("(4, 2, 0)");
+  });
+
+  await should("disallow calls to some methods", async () => {
+    const imageNode = await pasteImageToLoadImageNode(env);
+    imageNode.connect(0, powerPuter, 0);
+    setPowerPuterValue(
+      powerPuter,
+      "STRING",
+      `a.numpy().tofile('/tmp/test')
+      `,
+    );
+    await env.queuePrompt();
+
+    // Check to see if there's an error.
+    expect(document.querySelector(".p-dialog-mask .p-card-body")!.textContent).toContain(
+      "error message",
+      "Disallowed access to \"tofile\" for type <class 'numpy.ndarray'>",
+    );
+    (document.querySelector(".p-dialog-mask .p-dialog-close-button")! as HTMLButtonElement).click();
+  });
+
+  await should("handle boolean operators correctly", async () => {
+    const checks: Array<[string, string, string, ('toMatchJson'|'toBe')?]> = [
+      // And operator all success
+      ["1 and 42", "42", "STRING"],
+      ["True and [42]", "[42]", "STRING", "toMatchJson"],
+      ["a = 42\nTrue and [a]", "[42]", "STRING", "toMatchJson"],
+      ["1 and 3 and True and [1] and 42", "42", "STRING"],
+      // And operator w/ a failure
+      ["1 and 3 and True and [] and 42", "[]", "STRING", "toMatchJson"],
+      ["1 and 0 and True and [] and 42", "0", "STRING"],
+      ["1 and 2 and False and [] and 42", "False", "STRING"],
+      ["b = None\n1 and 2 and True and b and 42", "None", "STRING"],
+      // Or operator
+      ["1 or 42", "1", "STRING"],
+      ["0 or 42", "42", "STRING"],
+      ["0 or None or False or [] or 42", "42", "STRING"],
+      ["b=42\n0 or None or False or [] or b", "42", "STRING"],
+      ["b=42\n0 or None or False or [b] or b", "[42]", "STRING", "toMatchJson"],
+      ["b=42\n0 or None or True or [b] or b", "True", "STRING"],
+      // Mix
+      ["1 and 2 and 0 or 5", "5", "STRING"],
+      ["None and 1 or True", "True", "STRING"],
+      ["0 or False and True", "False", "STRING"],
+
+    ];
+    for (const data of checks) {
+      setPowerPuterValue(powerPuter, data[2], data[0]);
+      await env.queuePrompt();
+      expect(displayAny.widgets![0]!.value)[data[3] || 'toBe'](data[0], data[1]);
+    }
   });
 });
